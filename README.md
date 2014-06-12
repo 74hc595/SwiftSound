@@ -86,3 +86,5 @@ Notes
 -----
 
 This is my first significant venture into Swift. I haven't learned all the idioms yet; feel free to submit a pull request correcting anything that looks weird.
+
+I'm on Twitter: [@autorelease](https://twitter.com/autorelease)
