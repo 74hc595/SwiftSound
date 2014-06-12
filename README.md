@@ -80,3 +80,9 @@ tunes.
 let loFiTriangle = Piecewise(C-4, values: [0, 0.5, 1, 0.5, 0, -0.5, -1, -0.5])
 let arp = SquareWave(Piecewise(2.Hz, values: [C-4, E-4, G-4]))
 ```
+
+
+Notes
+-----
+
+This is my first significant venture into Swift. I haven't learned all the idioms yet; feel free to submit a pull request correcting anything that looks weird.
