@@ -74,13 +74,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // WAV data, an NSSound, or played:
         println(sine.toWAV(22050.Hz, duration: 1.sec).length)
         println(saw.toSound(22050.Hz, duration: 1.sec))
-        //tri.play(0.25.sec) // if sample rate is not specified, 44100 Hz is assumed
+        // tri.play(0.25.sec) // if sample rate is not specified, 44100 Hz is assumed
+        
+        // The >>! operator is shorthand for the play() function.
+        // It is an infix operator with the lowest priority, so it can be used without
+        // having to parenthesize compound expressions.
+        // SawtoothWave(440.Hz) + SawtoothWave(880.Hz) >>! 2.sec
+        // SawtoothWave(440.Hz) + SawtoothWave(880.Hz) >>! (8000.Hz, 2.sec)
+        
+        // The >>> operator writes the sound to a WAV file.
+        // SineWave(440.Hz) >>> (1.sec, NSHomeDirectory().stringByAppendingPathComponent("foo.wav"))
+        // SineWave(440.Hz) >>> (8000.Hz, 1.sec, NSHomeDirectory().stringByAppendingPathComponent("g.wav"))
+        
+        // >>! and >>> return a Bool, so you can append them to any example node in this file
+        // to listen to it.
         
         // ArbitraryFunctionWave can be used to generate arbitrary periodic waveforms.
         // This example approximates a square wave using the first three terms of its
         // Fourier series.
         let approxSquare = { sin($0*2*M_PI) + sin($0*6*M_PI)/3 + sin($0*10*M_PI)/5 }
-        let arbitraryWave = ArbitraryFunctionWave(440.Hz, function: approxSquare)
+        let arbitraryWave = ArbitraryFunctionWave(440.Hz, function: approxSquare) >>! 0.5.sec
 
         
         
@@ -88,21 +101,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Oscillators output a signal with an amplitude ranging from -1 to +1.
         // Multiplying a node by a scalar adjusts its amplitude.
-        let softerSqr = 0.25 * SquareWave(440.Hz)
+        let softerSqr = 0.25 * SquareWave(440.Hz) >>! 0.5.sec
         
         // Adding two or more nodes together produces a chord.
-        let unison = 0.5*TriangleWave(440.Hz) + 0.5*SawtoothWave(440.Hz)
-        let octave = SawtoothWave(440.Hz) + SawtoothWave(880.Hz)
+        let unison = 0.5*TriangleWave(440.Hz) + 0.5*SawtoothWave(440.Hz) >>! 0.5.sec
+        let octave = SawtoothWave(440.Hz) + SawtoothWave(880.Hz) >>! 0.5.sec
         
         // Adding oscillators with slightly detuned pitches produces a
         // "coursing" effect.
-        let supersaw = SawtoothWave(440.Hz) + SawtoothWave(439.Hz)
+        let supersaw = SawtoothWave(440.Hz) + SawtoothWave(439.Hz) >>! 0.5.sec
         
         // Multiplying two oscillators produces amplitude modulation.
-        let ampMod = SawtoothWave(440.Hz) * SawtoothWave(2.Hz)
+        let ampMod = SawtoothWave(440.Hz) * SawtoothWave(2.Hz) >>! 0.5.sec
         
         // Using an oscillator to specify frequency produces frequency modulation.
-        let freqMod = SawtoothWave(440.Hz + 100*SineWave(1.Hz))
+        let freqMod = SawtoothWave(440.Hz + 100*SineWave(1.Hz)) >>! 0.5.sec
         
         
         
@@ -111,11 +124,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // A noise generator produces a continuous stream of random numbers in
         // the range (-1, +1).
         // Sample-and-hold can be used to create pitched noise.
-        let eightBitNoise = SampleAndHold(500.Hz, input: Noise())
+        let eightBitNoise = SampleAndHold(500.Hz, input: Noise()) >>! 0.5.sec
         
         // This can be applied to the frequency input of an oscillator to produce
         // random tones:
-        let beepsAndBoops = SquareWave(440.Hz + 100*SampleAndHold(10.Hz, input: Noise()))
+        let beepsAndBoops = SquareWave(440.Hz + 100*SampleAndHold(10.Hz, input: Noise())) >>! 0.5.sec
         
         
         
@@ -151,25 +164,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let cMaj7 = majorSeventhChord(C-4)
         
         // As oscillators are added together, it's a good idea to scale down the sum to avoid clipping.
-        //(cMaj7*0.25).play(1.sec)
+        cMaj7*0.25 >>! 0.5.sec
         
         
         
         // --- Sequences --- //
         
         // A piecewise generator can be used as a custom oscillator.
-        let loFiTriangle = Piecewise(C-4, values: [0, 0.5, 1, 0.5, 0, -0.5, -1, -0.5])
+        let loFiTriangle = Piecewise(C-4, values: [0, 0.5, 1, 0.5, 0, -0.5, -1, -0.5]) >>! 0.5.sec
         
         // A piecewise generator can also be used to play an arpeggio by
         // plugging it into the frequency input of an oscillator.
-        let arp = SquareWave(Piecewise(2.Hz, values: [C-4, E-4, G-4]))
+        let arp = SquareWave(Piecewise(2.Hz, values: [C-4, E-4, G-4])) >>! 1.sec
         
         // The speed of a piecewise generator can also be specified by passing
         // the desired duration of one iteration.
-        let fastArp = SquareWave(Piecewise(0.1.sec, values: [C-4, E-4, G-4]))
+        let fastArp = SquareWave(Piecewise(0.1.sec, values: [C-4, E-4, G-4])) >>! 1.sec
         
         // A piecewise linear generator interpolates smoothly between values.
-        let wavy = SquareWave(PiecewiseLinear(0.5.sec, values: [C-4, E-4, E-3, C-5]))
+        let wavy = SquareWave(PiecewiseLinear(0.5.sec, values: [C-4, E-4, E-3, C-5])) >>! 2.sec
         
         // A familiar tune.
         let organ = { 0.4*(sin($0*2*M_PI) + sin($0*4*M_PI) + sin($0*8*M_PI)) }
@@ -182,7 +195,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let harmony:Scalar[] = [B-2, E-3, A-2, A-2]
         let tune = 0.5*ArbitraryFunctionWave(Piecewise(3.sec, values:notes), function:organ) +
             0.25*ArbitraryFunctionWave(Piecewise(3.sec, values:harmony), function:approxSquare)
-        tune.play(3.sec)
+        tune >>! 3.sec
+        
+        println("All done!")
     }
 }
 

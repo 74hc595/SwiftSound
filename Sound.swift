@@ -14,6 +14,7 @@ func b2(n:UInt32) -> UInt8 { return UInt8((n>>8) & 0xFF) }
 func b3(n:UInt32) -> UInt8 { return UInt8((n>>16) & 0xFF) }
 func b4(n:UInt32) -> UInt8 { return UInt8((n>>24) & 0xFF) }
 
+let defaultSampleRate = 44100.Hz
 
 extension Node {
     
@@ -22,7 +23,7 @@ extension Node {
     }
     
     func toWAV(duration:Duration) -> NSData {
-        return stream(44100.Hz, duration: duration).toWAV()
+        return stream(defaultSampleRate, duration: duration).toWAV()
     }
     
     func toSound(sampleRate:Rate, duration:Duration) -> NSSound {
@@ -33,12 +34,19 @@ extension Node {
         return NSSound(data: toWAV(duration))
     }
     
+    // Synchronous! (Just to make it easier to play a sequence of examples.)
     func play(sampleRate:Rate, duration:Duration) {
-        toSound(sampleRate, duration: duration).play()
+        if (duration.value > 0) {
+            print("Playing...")
+            let sound = toSound(sampleRate, duration: duration)
+            sound.play()
+            NSRunLoop.currentRunLoop().runUntilDate(NSDate(timeIntervalSinceNow: duration.value))
+            println("done")
+        }
     }
     
     func play(duration:Duration) {
-        toSound(duration).play()
+        play(defaultSampleRate, duration: duration)
     }
 }
 
@@ -91,4 +99,28 @@ extension SampleSequence {
     func play() {
         NSSound(data: toWAV()).play()
     }
+}
+
+
+operator infix >>>   { precedence 40 }
+operator infix >>!   { precedence 40 }
+
+// >>> is a shortcut for outputting a node to a WAV file
+func >>>(node:Node, options:(sampleRate:Rate, duration:Duration, path:String)) -> Bool {
+    return node.toWAV(options.sampleRate, duration: options.duration).writeToFile(options.path, atomically: true)
+}
+
+func >>>(node:Node, options:(duration:Duration, path:String)) -> Bool {
+    return node >>> (defaultSampleRate, options.duration, options.path)
+}
+
+// >>! is a shortcut for playing a node
+func >>!(node:Node, options:(sampleRate:Rate, duration:Duration)) -> Bool {
+    node.play(options.sampleRate, duration: options.duration)
+    return true
+}
+
+func >>!(node:Node, duration:Duration) -> Bool {
+    node >>! (defaultSampleRate, duration)
+    return true
 }
